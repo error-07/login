@@ -1,0 +1,142 @@
+
+// app.post('/login', async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
+
+//     // Retrieve the user from the database
+//     const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+//     const user = result.rows[0];
+
+//     // Check if the user exists
+//     if (!user) {
+//       return res.status(404).send(`
+//         <script>
+//           alert('User not found');
+//           window.location.href = '/login';
+//         </script>
+//       `);
+//     }
+
+//     // Compare passwords
+//     const isPasswordValid = await bcrypt.compare(password, user.password);
+
+//     if (!isPasswordValid) {
+//       return res.status(401).send(`
+//         <script>
+//           alert('Invalid password');
+//           window.location.href = '/login';
+//         </script>
+//       `);
+//     }
+
+//     // Redirect to the welcome page
+//     res.redirect(`/welcome?email=${email}`);
+//   } catch (error) {
+//     console.error('Error during login:', error);
+//     res.status(500).send(`
+//       <script>
+//         alert('An error occurred during login');
+//         window.location.href = '/login';
+//       </script>
+//     `);
+//   }
+// });
+
+
+//////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+//   app.post('/register', async (req, res) => {
+//     try {
+//       const { name, email, password, confirmPassword, is_admin } = req.body;
+  
+//       // Check if the user already exists
+//       const existingUser = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+  
+//       if (existingUser.rowCount > 0) {
+//         return res.status(409).send(`
+//           <script>
+//             alert('User already exists');
+//             window.location.href = '/register';
+//           </script>
+//         `);
+//       }
+  
+//       // Check if the passwords match
+//       if (password !== confirmPassword) {
+//         return res.status(400).send(`
+//           <script>
+//             alert('Passwords do not match');
+//             window.location.href = '/register';
+//           </script>
+//         `);
+//       }
+  
+//       // Hash the password
+//       const hashedPassword = await bcrypt.hash(password, 10);
+  
+//       // Insert the user into the database
+//       await pool.query(
+//         'INSERT INTO users (name, email, password, is_admin) VALUES ($1, $2, $3, $4)',
+//         [name, email, hashedPassword, is_admin]
+//       );
+  
+//       // Redirect to the login page
+//       res.redirect('/login');
+//     } catch (error) {
+//       console.error('Error during registration:', error);
+//       res.status(500).send(`
+//         <script>
+//           alert('An error occurred during registration');
+//           window.location.href = '/register';
+//         </script>
+//       `);
+//     }
+// });
+
+
+//////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+// app.get('/welcome', async (req, res) => {
+//   try {
+//     const email = req.query.email; // Assuming the email is passed as a query parameter
+
+//     // Retrieve the user from the database based on the email
+//     const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+//     const user = result.rows[0];
+
+//     if (!user) {
+//       return res.status(404).send(`
+//         <script>
+//           alert('User not found');
+//           window.location.href = '/login';
+//         </script>
+//       `);
+//     }
+
+//     const username = user.name;
+
+//     res.send(`
+//       <h1>Welcome</h1>
+//       <p>You are now logged in as ${username}.</p>
+//       <a href="/logout">Logout</a>
+//     `);
+//   } catch (error) {
+//     console.error('Error during login:', error);
+//     res.status(500).send(`
+//       <script>
+//         alert('An error occurred during login');
+//         window.location.href = '/login';
+//       </script>
+//     `);
+//   }
+// });
+
+//////////////////////////////////////////////////////////////////////////////////////////
+
+
+

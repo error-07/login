@@ -1,0 +1,220 @@
+// const express = require('express');
+// const bodyParser = require('body-parser');
+// const session = require('express-session');
+// const passport = require('passport');
+// const bcrypt = require('bcrypt');
+// const { Pool } = require('pg');
+// const OktaStrategy = require('passport-okta-oauth').Strategy;
+
+// const okta = require('@okta/okta-sdk-nodejs');
+
+// const app = express();
+
+// app.use(bodyParser.urlencoded({ extended: false }));
+// app.use(bodyParser.json());
+
+
+// const port = 3000;
+
+// // Create a PostgreSQL connection pool
+// const pool = new Pool({
+//   user: 'basith',
+//   host: 'localhost',
+//   database: 'login',
+//   password: '123',
+//   port: 5432,
+// });
+
+// // Configure Okta authentication
+// passport.use(
+//   new OktaStrategy({
+//     issuer: 'https://trial-6218819.okta.com',
+//     clientID: '0oa5np9u373xI077v697',
+//     clientSecret: 'WwnQ_edMSvmfZbgxS8XNER2w_LlSO4cUXyzkIuUJ',
+//     callbackURL: 'http://localhost:3000/auth/callback',
+//   },
+//   (accessToken, refreshToken, profile, done) => {
+//     // You can customize the user profile mapping as per your requirements
+//     const user = { id: profile.id, name: profile.displayName };
+//     return done(null, user);
+//   })
+// );
+
+// // Set up session  and passport middleware
+// app.use(session({
+//   secret: 'your-session-secret',
+//   resave: true,
+//   saveUninitialized: false
+// }));
+// app.use(passport.initialize());
+// app.use(passport.session());
+
+// // Serialize and deserialize user
+// passport.serializeUser((user, done) => {
+//   done(null, user.id);
+// });
+// passport.deserializeUser((id, done) => {
+//   // Fetch the user from your database if necessary
+//   const user = { id, name: 'man' }; 
+//   done(null, user);
+// });
+
+// // Middleware to check if the user is authenticated
+// const isAuthenticated = (req, res, next) => {
+//   if (req.isAuthenticated()) {
+//     return next();
+//   }
+//   res.redirect('/login');
+// };
+
+// // Register route - GET
+// app.get('/register', (req, res) => {
+//   res.send(`
+//     <h1>Register</h1>
+//     <form method="POST" action="/register">
+//       <label>Name:</label>
+//       <input type="text" name="name" required><br>
+//       <label>Email:</label>
+//       <input type="email" name="email" required><br>
+//       <label>Password:</label>
+//       <input type="password" name="password" required><br>
+//       <label>Confirm Password:</label>
+//       <input type="password" name="confirmPassword" required><br>
+//       <label>Is Admin:</label>
+//       <input type="checkbox" name="is_admin"><br>
+//       <button type="submit">Register</button>
+//     </form>
+//     <p>Already have an account? <a href="/login">Login</a></p>
+//   `);
+// });
+
+// // Home route
+// app.get('/', isAuthenticated, (req, res) => {
+//   res.send(`
+//     <h1>Welcome, ${req.user.name}!</h1>
+//     <p>You are now logged in.</p>
+//     <form method="POST" action="/logout">
+//       <button type="submit">Logout</button>
+//     </form>
+//   `);
+// });
+
+// // Register route - POST
+// app.post('/register', async (req, res) => {
+//   const { name, email, password, confirmPassword } = req.body;
+
+//   // Check if the passwords match
+//   if (password !== confirmPassword) {
+//     return res.status(400).send(`
+//       <script>
+//         alert('Passwords do not match');
+//         window.location.href = '/register';
+//       </script>
+//     `);
+//   }
+
+//   try {
+//     // Check if the user already exists in the database
+//     const userExists = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+//     if (userExists.rows.length > 0) {
+//       return res.status(400).send(`
+//         <script>
+//           alert('User already exists');
+//           window.location.href = '/register';
+//         </script>
+//       `);
+//     }
+
+//     // Hash the password
+//     const hashedPassword = await bcrypt.hash(password, 10);
+
+//     // Insert the new user into the database
+//     await pool.query(
+//       'INSERT INTO users (name, email, password) VALUES ($1, $2, $3)',
+//       [name, email, hashedPassword]
+//     );
+
+//     // Display the welcome page with the new user
+//     res.send(`
+//       <h1>Welcome, ${name}!</h1>
+//       <p>You have successfully registered.</p>
+//     `);
+//   } catch (error) {
+//     console.error('Error during registration:', error);
+//     res.status(500).send(`
+//       <script>
+//         alert('An error occurred during registration');
+//         window.location.href = '/register';
+//       </script>
+//     `);
+//   }
+// });
+
+
+// // Login route - GET
+// app.get('/login', (req, res) => {
+//   res.send(`
+//     <h1>Login</h1>
+//     <form method="POST" action="/login">
+//       <label>Email:</label>
+//       <input type="email" name="email" required><br>
+//       <label>Password:</label>
+//       <input type="password" name="password" required><br>
+//       <button type="submit">Login</button>
+//     </form>
+//     <p>Don't have an account? <a href="/register">Register</a></p>
+//   `);
+// });
+
+// // Login route - POST
+// app.post('/login', async (req, res) => {
+//   const { email, password } = req.body;
+//   try {
+//     // Retrieve the user from the database
+//     const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+//     const user = result.rows[0];
+
+//     // Check if the user exists
+//     if (!user) {
+//       return res.status(404).send(`
+//         <script>
+//           alert('User not found');
+//           window.location.href = '/login';
+//         </script>
+//       `);
+//     }
+
+//     // Compare passwords
+//     const isPasswordValid = await bcrypt.compare(password, user.password);
+
+//     if (!isPasswordValid) {
+//       return res.status(401).send(`
+//         <script>
+//           alert('Invalid password');
+//           window.location.href = '/login';
+//         </script>
+//       `);
+//     }
+
+//     res.send(`
+//       <h1>Welcome, ${user.name}!</h1>
+//       <p>You are now logged in.</p>
+//     `);
+//   } catch (error) {
+//     console.error('Error during login:', error);
+//     res.status(500).send(`
+//       <script>
+//         alert('An error occurred during login');
+//         window.location.href = '/login';
+//       </script>
+//     `);
+//   }
+// });
+
+
+
+// app.listen(port, () => {
+//   console.log(`Server running on port ${port}`);
+// });
+
+

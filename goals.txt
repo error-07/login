@@ -1,0 +1,3 @@
+user priviliges
+login page rather than okta login
+login verifies okta (login then okta 2fa then home page)
